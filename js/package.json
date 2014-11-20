@@ -1,0 +1,29 @@
+{
+  "name": "vivagraphjs",
+  "version": "0.5.8",
+  "description": "Graph Drawing Library",
+  "main": "dist/vivagraph",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/anvaka/VivaGraphJS.git"
+  },
+  "keywords": [
+    "graph"
+  ],
+  "author": "Andrei Kashcha",
+  "license": "BSD",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.0",
+    "grunt-contrib-jshint": "~0.4.1",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-concat": "~0.1.3",
+    "grunt-regarde": "~0.1.1"
+  }
+}
