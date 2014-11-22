@@ -1,5 +1,6 @@
 
 var graph = Viva.Graph.graph();
+var graphLongest = Viva.Graph.graph();
 
 
 
@@ -21,7 +22,7 @@ function main(){
                 springLength : 10,
                 springCoeff : 0.0010,
                 dragCoeff : 0.02,
-                gravity : -.5
+                gravity : -.1
             });
 
             // Set custom nodes appearance
@@ -29,8 +30,20 @@ function main(){
             try{
             graphics.node(function(node) {
                    // The function is called every time renderer needs a ui to display node
-                   return  Viva.Graph.svg('text')
-                        .attr('y', '0px').text(node.data);
+                var ui =  Viva.Graph.svg("rect")
+                         .attr("width", 10)
+                         .attr("height", 10)
+                         .attr("fill", "#00a2e8")
+                         .attr("id", node.data);
+
+
+                    
+
+                        ui.append("text")
+                            .attr("y", 5 )
+                            .attr("dy", ".35em")
+                            .text(node.data);
+                return ui;    
                 });
             }catch(ee){}  
 
@@ -43,8 +56,10 @@ function main(){
             renderer.run();
                         
 
-
+    createLongestCascadeGraph();
   };
+
+
     //SOCKET IOCODE
     var countHashtags= 0;
     var words = {};
@@ -64,12 +79,13 @@ function main(){
             var words = [];
             words = data.text.split(" ");
             for(i=0; i < words.length; i++){
+                var numOfHashTags = 0;
                 if(words[i].indexOf("#")==0){
                   //console.log(words[i]);
-                  
+                  ++numOfHashTags;
                   //get the hashtag.
                   var hashtag = words[i];
-
+                  updateCurrentHashtag(hashtag)
                   //is the hastag known?
                   if(hashtag in hashtags){
                        var hashtagVar = hashtags[hashtag];
@@ -77,44 +93,129 @@ function main(){
                         hashtagVar = [];
                        }
                        //the first link found....
+                       //but it coulc also be already part of the graph...Merging
                        try{
-                       if((hashtagVar.length >=1) && (hashtagVar.length <2)){
+                       var mergedCascade = false;
+                       var mergedFrom = "";
+                       var mergedTo = "";
+                       if((hashtagVar.length >=3) && (hashtagVar.length <4)){
+                        
+                        if(graph.getNode(hashtagVar[0].id) != undefined){
+                          mergedCascade = true;
+                        }
+                        if(graph.getNode(hashtagVar[1].id) != undefined){
+                          mergedCascade = true;
+                        }
+                        if(graph.getNode(data.id) != undefined){
+                          mergedCascade = true;
+                        }
+
+                         if(mergedCascade){
+                            mergedFrom= graph.getNode(hashtagVar[0].id).data;
+                            mergedTo= hashtag;
+                            //console.log("merged cascades:"+graph.getNode(hashtagVar[0].id).data+" With "+hashtag);
+                            //mergedCascade = false;
+                          } 
                          graph.addNode(hashtagVar[0].id, hashtag);//hashtagVar[0].data);
-                         graph.addNode(data.id, (hashtagVar.length+1).toString());//hashtagVar[0].data);
-                        if((graph.getNode(hashtagVar[0].id) !=undefined) && (graph.getNode(data.id) !=undefined))   {
-                         graph.addLink(data.id,hashtagVar[0].id);
+                         graph.addNode(hashtagVar[1].id, 1);
+                         //if already added get node and append the hastag..
+                         if(graph.getNode(data.id) != undefined){
+                          if (data.tags !=undefined){
+                            data.tags.push(hashtag);
+                          }else{
+                            var tags = [];
+                            tags.push(hashtag);
+                            data.tags = tags;
+                          }
+                         }else{
+                            var tags = [];
+                            tags.push(hashtag);
+                            data.tags = tags;
+                         }
+                         graph.addNode(data.id, data);//(hashtagVar.length+1).toString());//hashtagVar[0].data);
+                        if((graph.getNode(hashtagVar[0].id) !=undefined) && (graph.getNode(hashtagVar[1].id) !=undefined) && (graph.getNode(data.id) !=undefined))   {
+                          graph.addLink(hashtagVar[1].id,hashtagVar[0].id);
+                          graph.addLink(data.id,hashtagVar[1].id);
                        }
                        }}catch(ex){}
                        try{
-                       if(hashtagVar.length >=2){
+                       if(hashtagVar.length >=4){
                         if(hashtagVar.length>longestCascade){
                           longestCascade = hashtagVar.length;
-                          longestCascadeName = hashtag;
+                          if(longestCascadeName == hashtag){}else{
+                           longestCascadeName = hashtag;
+                           //createLongestCascadeGraph();
+                          }
                           $("#longestCascade span").html(longestCascade);
                           $("#longestCascadeID span").html(longestCascadeName);
 
                         }
-                        graph.addNode(data.id, (hashtagVar.length+1).toString());
+                        if(graph.getNode(hashtagVar[hashtagVar.length-1].id) != undefined){
+                          mergedCascade = true;
+                        }
+                        if(graph.getNode(data.id) != undefined){
+                          mergedCascade = true;
+                        }
+
+                        if(mergedCascade){
+                            //console.log("merged cascades:"+graph.getNode(hashtagVar[0].id).data+" With "+hashtag);
+                            mergedFrom= graph.getNode(hashtagVar[0].id).data;
+                            mergedTo= hashtag;
+                            //mergedCascade = false;
+                          } 
+                          if(graph.getNode(data.id) != undefined){
+                          if (data.tags !=undefined){
+                            data.tags.push(hashtag);
+                          }else{
+                            var tags = [];
+                            tags.push(hashtag);
+                            data.tags = tags;
+                          }
+                         }else{
+                            var tags = [];
+                            tags.push(hashtag);
+                            data.tags = tags;
+                         }
+
+                        graph.addNode(data.id, data); //(hashtagVar.length+1).toString());
+
+
                         if(graph.getNode(hashtagVar[hashtagVar.length-1].id) !=undefined){
                           graph.addLink(data.id,hashtagVar[hashtagVar.length-1].id);
                         }
-                       }}catch(e){}
+                       }
+
+
+                          
+
+                     }catch(e){}
                     var ids = hashtags[hashtag];
                     if((ids == undefined) || (ids == null)){
                         ids = [];
                        }
                     ids.push(data);
                     hashtags[hashtag] = ids;
+
+
+
                   }else{
                     var ids = [];
                     ids.push(data);
                     hashtags[hashtag] = ids;
 
                   }
+
+                  if(mergedCascade && numOfHashTags==1){
+                   // console.log("merged cascades:"+mergedFrom+" With "+mergedTo);
+                    mergedCascade = false;
+                  } 
+
+                  
                 }
                 //console.log(hashtags)
             }
          //   graph.addNode(data.id);
+
         }  
         }
 
@@ -128,9 +229,9 @@ function main(){
         if(cleanup){
           
           cleanUpCascades2();
-          //cleanupGraph();
-          longestCascade = 0;
-          longestCascadeName = "";
+          //checkNodesForMultiJoins();
+          // longestCascade = 0;
+          // longestCascadeName = "";
           cleanup = false;
         }
 
@@ -143,14 +244,30 @@ function activateCleanUP(){
   cleanup =true;
 }
 
+var numOfItems = 0;
 
 
-function cleanupGraph(){
-
+function checkNodesForMultiJoins(){
 
 graph.forEachNode(function(node){
+  if(numOfItems>10){
+      $("#mergingHashTags span").html("");
+      numOfItems = 0;
+  }
+    if(node.links.length>2){
+        //console.log(node.id, node.data.tags);
+          ++numOfItems;
+          try{
+          if(node.data.tags !=undefined){
+            if(node.data.tags[0] != node.data.tags[1]){
+             $("#mergingHashTags span").append("<p>"+node.data.tags.join(" -- ")+"</p>");
+          }
+          }
+        }catch(e){
 
-    console.log(node.id, node);
+          }
+        
+    }
 });
 
 }
@@ -203,6 +320,19 @@ graph.forEachNode(function(node){
 
 // };
 
+function updateCurrentHashtag(hashtag){
+
+if(numOfItems>8){
+      $("#mergingHashTags span").html("");
+      numOfItems = 0;
+  }
+  try{
+   $("#mergingHashTags span").append("<p>"+hashtag+"</p>");
+   ++numOfItems;
+  }catch(e){};
+
+}
+
 function cleanUpCascades2(){
 
 
@@ -218,16 +348,16 @@ try{
 
 
   for(var key in hashtags){
-    ++countHashtags;
+    ++countHashtags; 
     try{
         if((hashtags[key] != undefined) || (hashtags[key] != null)){
-            if((hashtags[key].length<5)){ //(hashtags[key].length>1) && 
+            if((hashtags[key].length<1)){ //(hashtags[key].length>1) && 
                 var nodes = hashtags[key];
                 //console.log("Removing "+index);
                 for(i = 0; i<nodes.length; i++){
                     //console.log(graph.getNode(nodes[i].id).links.length);
                     if(graph.getNode(nodes[i].id) !=undefined){
-                      if(graph.getNode(nodes[i].id).links.length<=2){
+                      if(graph.getNode(nodes[i].id).links.lengt<=1){
                           //console.log("Removing "+nodes[i].id);
                           graph.removeNode(nodes[i].id);
                       }
@@ -252,9 +382,76 @@ try{
 
 };
 
-    
-var interval = setInterval(function(){cleanUpCascades2()}, 500);
 
+
+function createLongestCascadeGraph(){
+
+  try{
+
+  //aphLongest.addNode(1);
+
+  var layout2 = Viva.Graph.Layout.forceDirected(graphLongest, {
+                springLength : 10,
+                springCoeff : 0.0010,
+                dragCoeff : 0.02,
+                gravity : -.1
+            });
+
+            // Set custom nodes appearance
+            var graphics2 = Viva.Graph.View.svgGraphics();
+            try{
+            graphics2.node(function(node) {
+                   // The function is called every time renderer needs a ui to display node
+                var ui =  Viva.Graph.svg("rect")
+                         .attr("width", 6)
+                         .attr("height", 6)
+                         .attr("fill", "#FF7F50");
+
+                return ui;    
+                });
+            }catch(ee){}  
+
+            var renderer2 = Viva.Graph.View.renderer(graphLongest, 
+                {
+                    container : document.getElementById('singleCascadeGraph'),
+                    graphics : graphics2,
+                    layout : layout2
+                });
+            renderer2.run();
+
+  }catch(e){
+
+    console.log(e);
+
+  }
+
+
+}
+
+function updateLongestCascadeGraph(){
+
+  graphLongest.clear();
+
+   var nodes = hashtags[longestCascadeName];
+
+    for(i = 0; i<nodes.length; i++){
+      try{
+        graphLongest.addLink(nodes[i+1].id,nodes[i].id);
+      }catch(e){
+
+      }
+    }
+
+}
+
+
+    
+var interval = setInterval(function(){activateCleanUP()}, 100);
+
+var intervalGraphSmall = setInterval(function(){updateLongestCascadeGraph()}, 5000);
+
+
+//var intervalHastags = setInterval(function(){checkNodesForMultiJoins()}, 500);
 
 
 

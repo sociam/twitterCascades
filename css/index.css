@@ -35,8 +35,8 @@ svg {
   top:0;
   right: 0;	  
   z-index:4;
-  width: 60%;
-  height: 100%;
+  width: 70%;
+  height: 60%;
   border: 1px; 
 }
 
@@ -66,6 +66,24 @@ svg {
   z-index:7;
 }
 
+#liveStreamTextDiv {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width:30%;
+  height:50%;   
+  z-index:7;
+}
+
+
+#singleCascadeGraph{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width:70%;
+  height:38% ;   
+  z-index:7;
+}
 
 .thumbimg {
     max-height: 200px;
