@@ -26,23 +26,27 @@
 <body onload='main()'>
 
 <div class="panel panel-primary" id="statsDiv">
-	  <div class="panel-heading"><H1><strong>Twitter Cascade Statistics</strong></H1></div>
+	  <div class="panel-heading"><H2><strong>Twitter Cascade Statistics</strong></H2></div>
 		<div class="panel-body">
-			<div id="totalCascades"><H2> Active Cascades: <span></span> </H2></div>
-			<div id="longestCascade"><H2> Longest Cascade: <span></span> </H2></div>
-			<div id="longestCascadeID"><H2> Longest Cascade ID: <span></span> </H2></div>
-
 			<div class="progress">
   				<div class="progress-bar" id="counter" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
-    				<span>10% Tweets</span>
+    				<span>0 Nodes</span>
   				</div>
 			</div>
+			<div id="totalCascades"><H3> Active Cascades: <span></span> </H3></div>
+			<div id="totalStubs"><H3> Active Stubs: <span></span> </H3></div>
+			<div id="longestCascade"><H3> Longest Cascade: <span></span> </H3></div>
+			<div id="longestCascadeID"><H3> Longest Cascade ID: <span></span> </H3></div>
+
+
+			<div id="overallProcessedCascades"><H3> Total Processed Cascades: <span></span> </H3></div>
+			<div id="overallProcessedNodes"><H3> Total Processed Nodes: <span></span> </H3></div>
 
 		</div>
 </div>
 
 <div class="panel panel-primary" id="liveStreamTextDiv">
-	  <div class="panel-heading"><H2><strong>Twitter Cascade Merges</strong></H2></div>
+	  <div class="panel-heading"><strong>Twitter Cascade Merges</strong></div>
 		<div class="panel-body">
 			<div id="mergingHashTags"><H3> <span></span> </H3></div>
 			
