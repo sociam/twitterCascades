@@ -73,6 +73,10 @@ function main(){
        try{
         if(data !=undefined){
         if(data.text.indexOf("#") > -1){
+            //set the cascade properties
+            data.root = false;
+            data.child = false;
+            data.stub = false;
             var words = [];
             words = data.text.split(" ");
             for(i=0; i < words.length; i++){
@@ -114,18 +118,27 @@ function main(){
                             //console.log("merged cascades:"+graph.getNode(hashtagVar[0].id).data+" With "+hashtag);
                             //mergedCascade = false;
                           } 
-                         data.color = "#FF0000";
-                         data.root = true;
-                         data.child = false;
-                         data.stub = false;
-                         data.position = 0;
-                         graph.addNode(hashtagVar[0].id, data);//hashtagVar[0].data);
-                         data.color = "#00a2e8"; //stub is initially green.
-                         data.root = false;
-                         data.stub = false;
-                         data.child = true;
-                         data.position = 1;
-                         graph.addNode(hashtagVar[1].id, data);
+                         //give a root node...
+                         var root = hashtagVar[0];
+                         root.color = "#FF0000";
+                         root.root = true;
+                         root.child = false;
+                         root.stub = false;
+                         root.position = 0;
+                         graph.addNode(root.id, root);//hashtagVar[0].data);
+                         //must also update the original model
+                         hashtagVar[0] = root;
+                        
+
+                         var firstNode = hashtagVar[1];
+                         firstNode.color = "#00a2e8"; //stub is initially green.
+                         firstNode.root = false;
+                         firstNode.stub = false;
+                         firstNode.child = true;
+                         firstNode.position = 1;
+                         graph.addNode(firstNode.id, firstNode);
+                          hashtagVar[1] = firstNode;
+
                          //if already added get node and append the hastag..
                          if(graph.getNode(data.id) != undefined){
                           if (data.tags !=undefined){
@@ -145,9 +158,9 @@ function main(){
                          data.position = 2;
 
                          graph.addNode(data.id, data);//(hashtagVar.length+1).toString());//hashtagVar[0].data);
-                        if((graph.getNode(hashtagVar[0].id) !=undefined) && (graph.getNode(hashtagVar[1].id) !=undefined) && (graph.getNode(data.id) !=undefined))   {
-                          graph.addLink(hashtagVar[1].id,hashtagVar[0].id);
-                          graph.addLink(data.id,hashtagVar[1].id);
+                        if((graph.getNode(root.id) !=undefined) && (graph.getNode(firstNode.id) !=undefined) && (graph.getNode(data.id) !=undefined))   {
+                          graph.addLink(firstNode.id,root.id);
+                          graph.addLink(data.id,firstNode.id);
                        }
                        }}catch(ex){}
                        try{
@@ -188,6 +201,8 @@ function main(){
                             tags.push(hashtag);
                             data.tags = tags;
                          }
+
+                        //set the newly added edge as the stub.
                          //GREEN #00CC00 BLUE 00a2e8
                          data.color = "#00cc00";
                          data.root = false;
@@ -198,15 +213,15 @@ function main(){
 
                         if(graph.getNode(hashtagVar[hashtagVar.length-1].id) !=undefined){
                          
-                         //remove and recolor it from a stub
+                         //remove and recolor it frombeing a stub and update
                          oldStubData = graph.getNode(hashtagVar[hashtagVar.length-1].id).data;
                          oldStubData.color = '#00a2e8';
                          oldStubData.stub = false;
                          oldStubData.root = false;
                          oldStubData.child = true;
-                         //var color = {'color':'#00a2e8'}
-                          graph.addNode(hashtagVar[hashtagVar.length-1].id, oldStubData);
-                          graph.addLink(data.id,hashtagVar[hashtagVar.length-1].id);
+                         graph.addNode(oldStubData.id, oldStubData);
+                         hashtagVar[hashtagVar.length-1] = oldStubData;
+                         graph.addLink(data.id,oldStubData.id);
                         }
                        }
                      }catch(e){}
@@ -256,6 +271,7 @@ function main(){
         if(cleanup){
           
           cleanUpCascades2();
+          observeCascadePatterns();
           //checkNodesForMultiJoins();
           // longestCascade = 0;
           // longestCascadeName = "";
@@ -271,6 +287,63 @@ function activateCleanUP(){
   cleanup =true;
 }
 
+var cascadePatterns = {};
+
+function observeCascadePatterns(){
+
+  for(hashtag in hashtags){
+  var output = "";
+  if(hashtags[hashtag].length>5){
+    var nodes = hashtags[hashtag];
+                //console.log("Removing "+index);
+                output = "START-";
+                for(i = 0; i<nodes.length; i++){
+                  if(nodes[i].root){
+                  output = output + "root-";
+                  }
+                  if(nodes[i].child){
+                  output = output + "child-"; 
+                  }
+                  if(nodes[i].stub){
+                  output = output + "stub-";
+                  }
+                  
+                }
+                output = output+"END";
+                //console.log(output);
+    
+  
+
+  if(output.indexOf("root") > -1){
+    //add to current patterns
+     if(output in cascadePatterns){
+        cascadePatterns[output] = cascadePatterns[output]+1;
+
+      }else{
+            cascadePatterns[output] = 1;
+      }
+  }
+}
+}
+fimdMostCommonCascadeType();
+  //console.log("unique Cascade Patterns: "+ Object.keys(cascadePatterns).length);
+}
+
+function fimdMostCommonCascadeType(){
+
+  var longest = 0;
+  var mostCommon = "";
+  for(cascade in cascadePatterns){
+    if(cascadePatterns[cascade] > longest){
+      longest = cascadePatterns[cascade];
+      mostCommon = cascade;
+    }
+  }
+
+  console.log("most common cascade:"+mostCommon);
+
+}
+
 
 function processStats(){
 
@@ -280,6 +353,7 @@ function processStats(){
   //update the UI
    $("#overallProcessedCascades span").html(totalProcessedCascades);
    $("#overallProcessedNodes span").html(totalProcessedNodes);
+   $("#overallCascadePatterns span").html(Object.keys(cascadePatterns).length);
 
 }
 
