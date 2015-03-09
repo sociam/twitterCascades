@@ -5,6 +5,12 @@ var graphLongest = Viva.Graph.graph();
 var totalProcessedCascades = 0;
 var totalProcessedNodes = 0;
 
+
+//starting operator
+filterOperator = "#";
+filterOperatorLang = "";
+
+
 function main(){
             
             // Step 2. We add nodes and edges to the graph:
@@ -31,22 +37,22 @@ function main(){
             graphics.node(function(node) {
                    // The function is called every time renderer needs a ui to display node
                 var ui =  Viva.Graph.svg("rect")
-                         .attr("width", 10)
-                         .attr("height", 10)
+                         .attr("width", 8)
+                         .attr("height", 8)
                          .attr("fill", node.data.color)
                          .attr("id", node.data);
 
                         ui.append("text")
-                            .attr("y", 5 )
-                            .attr("dy", ".35em")
-                            .text(node.data);
+                            .attr("y", '-4px' )
+                            //.attr("dy", ".35em")
+                            .text(node.data.label);
                 return ui;    
                 });
             }catch(ee){}  
 
             var renderer = Viva.Graph.View.renderer(graph, 
                 {
-			              container : document.getElementById('graphDiv'),
+			        container : document.getElementById('graphDiv'),
                     graphics : graphics,
                     layout : layout
                 });
@@ -54,8 +60,34 @@ function main(){
                         
 
     createLongestCascadeGraph();
+
+
+    getFilterOperator();
+
   };
 
+
+  function getFilterOperator(){
+
+    if(current_filter_keyword.length>0){
+      filterOperator = current_filter_keyword;
+    }else{
+      filterOperator = "#";
+    }
+    return filterOperator;
+
+  }
+
+    function getFilterOperatorLang(){
+
+    if(current_filter_lang.length>0){
+      filterOperatorLang = current_filter_lang;
+    }else{
+      filterOperatorLang = "";
+    }
+    return filterOperatorLang;
+
+  }
 
     //SOCKET IOCODE
     var countHashtags= 0;
@@ -69,10 +101,30 @@ function main(){
     var longestCascadeName = "";
 
     socket.on('spinn3r', function (data) {
-       // console.log(data);
-       try{
+        //console.log(data);
+      
+      if(generateCascades(data))
+
+        if(cleanup){
+          
+          cleanUpCascades2();
+          observeCascadePatterns();
+          //checkNodesForMultiJoins();
+          // longestCascade = 0;
+          // longestCascadeName = "";
+          cleanup = false;
+        }
+      
+
+    });
+
+
+
+function generateCascades(data){
+
+ try{
         if(data !=undefined){
-        if(data.text.indexOf("#") > -1){
+        if(data.text.indexOf(getFilterOperator()) > -1){
             //set the cascade properties
             data.root = false;
             data.child = false;
@@ -81,7 +133,7 @@ function main(){
             words = data.text.split(" ");
             for(i=0; i < words.length; i++){
                 var numOfHashTags = 0;
-                if(words[i].indexOf("#")==0){
+                if(words[i].indexOf(getFilterOperator())==0){
                   //console.log(words[i]);
                   ++numOfHashTags;
                   //get the hashtag.
@@ -125,6 +177,7 @@ function main(){
                          root.child = false;
                          root.stub = false;
                          root.position = 0;
+                         root.label = hashtag;
                          graph.addNode(root.id, root);//hashtagVar[0].data);
                          //must also update the original model
                          hashtagVar[0] = root;
@@ -162,7 +215,10 @@ function main(){
                           graph.addLink(firstNode.id,root.id);
                           graph.addLink(data.id,firstNode.id);
                        }
-                       }}catch(ex){}
+                       }}catch(ex){
+
+
+                       }
                        try{
                        if(hashtagVar.length >=4){
                         if(hashtagVar.length>longestCascade){
@@ -224,7 +280,9 @@ function main(){
                          graph.addLink(data.id,oldStubData.id);
                         }
                        }
-                     }catch(e){}
+                     }catch(e){
+
+                     }
                     var ids = hashtags[hashtag];
                     if((ids == undefined) || (ids == null)){
                         ids = [];
@@ -259,26 +317,20 @@ function main(){
         }  
         }
         //update the current global counts:
-
         processStats();
+        
         }catch(err){
           console.log(err);
           graph.beginUpdate();
           graph.endUpdate();
-
         }  
 
-        if(cleanup){
-          
-          cleanUpCascades2();
-          observeCascadePatterns();
-          //checkNodesForMultiJoins();
-          // longestCascade = 0;
-          // longestCascadeName = "";
-          cleanup = false;
-        }
+        return true;
 
-    });
+
+}
+
+
 
 var cleanup = false;
 
@@ -361,7 +413,11 @@ function processStats(){
 
 var numOfItems = 0;
 
+var totalRoots = 0;
+
 var totalStubs = 0;
+
+var totalChildren = 0;
 
 function checkNodesForMultiJoins(){
 
@@ -369,14 +425,18 @@ graph.forEachNode(function(node){
 
   //find if it is a stub.
   try{
-  if(node.data.stub){
-    ++totalStubs;
-  }
-}catch(e){
+    if(node.data.stub){
+      ++totalStubs;
+    }
+    if(node.data.child){
+      ++totalChildren;
+    }
+    if(node.data.root){
+      ++totalRoots;
+    }
+  }catch(e){}
 
-}
-
-  if(numOfItems>10){
+  if(numOfItems>4){
       $("#mergingHashTags span").html("");
       numOfItems = 0;
   }
@@ -448,7 +508,7 @@ graph.forEachNode(function(node){
 
 function updateCurrentHashtag(hashtag){
 
-if(numOfItems>8){
+if(numOfItems>5){
       $("#mergingHashTags span").html("");
       numOfItems = 0;
   }
@@ -467,6 +527,8 @@ if(graph.getNodesCount()>1000){
   hashtags = new Object();
   longestCascade = 0;
   totalStubs = 0;
+  totalRoots = 0;
+  totalChildren = 0;
 }
 
 try{
@@ -478,14 +540,15 @@ try{
     ++countHashtags; 
     try{
         if((hashtags[key] != undefined) || (hashtags[key] != null)){
-            if((hashtags[key].length<2)){ //(hashtags[key].length>1) && 
+            if((hashtags[key].length<2)){ //(hashtags[key].length>1) &&  //THIS WAS 2 BEFORE SPINN3R BREAKING
                 var nodes = hashtags[key];
                 //console.log("Removing "+index);
                 for(i = 0; i<nodes.length; i++){
                   
                   try{
                     if(graph.getNode(nodes[i].id).data.stub){++totalStubs;}
-                  
+                    if(graph.getNode(nodes[i].id).data.child){++totalChildren;}
+                    if(graph.getNode(nodes[i].id).data.root){++totalRoots;}
                 }catch(error){
 
                 }
@@ -507,7 +570,16 @@ try{
   
   }
   $("#totalCascades span").html(countHashtags);
+  $("#totalRoots span").html(totalRoots);
   $("#totalStubs span").html(totalStubs);
+  $("#totalChildren span").html(totalChildren);
+  $("#cascadeFilter span").html(filterOperator);
+  $("#cascadeFilterLang span").html(getFilterOperatorLang());
+
+  cascadeFilterLang
+
+
+
   countHashtags=0;
 
   //also set the node counter...
@@ -540,7 +612,7 @@ function createLongestCascadeGraph(){
                 var ui =  Viva.Graph.svg("rect")
                          .attr("width", 6)
                          .attr("height", 6)
-                         .attr("fill", "#FF7F50");
+                         .attr("fill", "#FFA500");
 
                 return ui;    
                 });

@@ -3,12 +3,17 @@
 
 <head>
 
+<!-- 	 <meta http-equiv="refresh" content="600">        
+ -->
 	<!-- External Resources-->
 	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 	<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 	<script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
+	
   <script type="text/javascript" src="js/dist/vivagraph.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/filter.js"></script>
+
   <link rel="stylesheet" type="text/css" href="css/index.css">
 
 	<!-- BOOTSTRAP-->
@@ -26,22 +31,26 @@
 <body onload='main()'>
 
 <div class="panel panel-primary" id="statsDiv">
-	  <div class="panel-heading"><H2><strong>Twitter Cascade Statistics</strong></H2></div>
+	  <div class="panel-heading"><H3><strong>Twitter Cascade Statistics</strong></H3></div>
 		<div class="panel-body">
 			<div class="progress">
   				<div class="progress-bar" id="counter" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
     				<span>0 Nodes</span>
   				</div>
 			</div>
-			<div id="totalCascades"><H3> Active Cascades: <span></span> </H3></div>
-			<div id="totalStubs"><H3> Active Stubs: <span></span> </H3></div>
-			<div id="longestCascade"><H3> Longest Cascade: <span></span> </H3></div>
-			<div id="longestCascadeID"><H3> Longest Cascade ID: <span></span> </H3></div>
+			<div id="cascadeFilter"><H4> Filtering By Keyword: <span></span> </H4></div>
+			<div id="cascadeFilterLang"><H4> Filtering By Language: <span></span> </H4></div>
+			<div id="totalCascades"><H4> Active Cascades: <span></span> </H4></div>
+			<div id="totalRoots"><H4> Active Roots: <span></span> </H4></div>
+			<div id="totalStubs"><H4> Active Stubs: <span></span> </H4></div>
+			<div id="totalChildren"><H4> Active Children: <span></span> </H4><br></br></div>
+			<div id="longestCascade"><H4> Longest Cascade: <span></span> </H4></div>
+			<div id="longestCascadeID"><H4> Longest Cascade ID: <span></span> </H4></div>
 
 
-			<div id="overallProcessedCascades"><H3> Total Processed Cascades: <span></span> </H3></div>			
-			<div id="overallCascadePatterns"><H3> Total Unqiue Cascades: <span></span> </H3></div>
-			<div id="overallProcessedNodes"><H3> Total Processed Nodes: <span></span> </H3></div>
+			<div id="overallProcessedCascades"><H4> Total Processed Cascades: <span></span> </H4></div>			
+			<div id="overallCascadePatterns"><H4> Total Unqiue Cascades: <span></span> </H4></div>
+			<div id="overallProcessedNodes"><H4> Total Processed Nodes: <span></span> </H4></div>
 
 		</div>
 </div>
@@ -49,7 +58,7 @@
 <div class="panel panel-primary" id="liveStreamTextDiv">
 	  <div class="panel-heading"><strong>Twitter Cascade Merges</strong></div>
 		<div class="panel-body">
-			<div id="mergingHashTags"><H3> <span></span> </H3></div>
+			<div id="mergingHashTags"><H4><span></span></H4></div>
 			
 
 		</div>

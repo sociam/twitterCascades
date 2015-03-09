@@ -62,7 +62,7 @@ svg {
   top: 0;
   left: 0;
   width:30%;
-  height:50%;   
+  height:70%;   
   z-index:7;
 }
 
@@ -71,7 +71,7 @@ svg {
   left: 0;
   bottom: 0;
   width:30%;
-  height:50%;   
+  height:30%;   
   z-index:7;
 }
 
