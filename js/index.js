@@ -540,7 +540,7 @@ try{
     ++countHashtags; 
     try{
         if((hashtags[key] != undefined) || (hashtags[key] != null)){
-            if((hashtags[key].length<2)){ //(hashtags[key].length>1) &&  //THIS WAS 2 BEFORE SPINN3R BREAKING
+            if((hashtags[key].length<1)){ //(hashtags[key].length>1) &&  //THIS WAS 2 BEFORE SPINN3R BREAKING
                 var nodes = hashtags[key];
                 //console.log("Removing "+index);
                 for(i = 0; i<nodes.length; i++){
